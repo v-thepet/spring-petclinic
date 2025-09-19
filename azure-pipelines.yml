@@ -23,16 +23,15 @@ stages:
         TargetFolder: $(Build.ArtifactStagingDirectory)
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
-
 - stage: Deploy
-  displayName: Deployment stage
+  displayName: Deploy to Environment
   jobs:
-    - deployment: VMDeploy
-      displayName: Web deploy
-      environment:
-        name:  linux-java-qs
-        resourceType: VirtualMachine
-      strategy:
+  - deployment: VMDeploy
+    displayName: web
+    environment:
+      name: Java
+      resourceType: VirtualMachine
+    strategy:
         rolling:
           maxParallel: 2  #for percentages, mention as x%
           preDeploy:
@@ -46,9 +45,12 @@ stages:
               inputs:
                 targetType: 'inline'
                 script: |
-                  # Modify deployment script based on the app type
-                  echo "Starting deployment script run"
-                  sudo java -jar '$(Pipeline.Workspace)/drop/target/spring-petclinic-3.5.0-SNAPSHOT.jar'
+                  JAR=$(ls $(Pipeline.Workspace)/drop/target/*.jar | head -n 1)
+                  java -jar "$JAR" --server.port=8081 &
+                  PID=$!
+                  sleep 15
+                  kill $PID 2>/dev/null || echo "Process already exited"
+
           routeTraffic:
             steps:
             - script: echo routing traffic
@@ -62,3 +64,4 @@ stages:
             success:
               steps:
               - script: echo Notify! This is on success
+
