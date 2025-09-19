@@ -4,10 +4,7 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-stages:
-- stage: Build
-  displayName: Build stage
-  jobs:  
+jobs:  
   - job: Build
     displayName: Build Maven Project
     steps:
@@ -23,13 +20,11 @@ stages:
         TargetFolder: $(Build.ArtifactStagingDirectory)
     - upload: $(Build.ArtifactStagingDirectory)
       artifact: drop
-- stage: Deploy
-  displayName: Deploy to Environment
-  jobs:
+
   - deployment: VMDeploy
     displayName: web
     environment:
-      name: Java
+      name: linux-java-qs
       resourceType: VirtualMachine
     strategy:
         rolling:
