@@ -23,6 +23,8 @@ jobs:
 
   - deployment: VMDeploy
     displayName: web
+    dependsOn: Build
+    condition: succeeded()
     environment:
       name: linux-java-qs
       resourceType: VirtualMachine
